@@ -1,0 +1,45 @@
+{
+  "name": "@flancer32/alarisa-desk",
+  "version": "0.1.0",
+  "description": "Desktop browser and PWA composition package for Alarisa.",
+  "type": "module",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/flancer32/alarisa-desk.git"
+  },
+  "homepage": "https://github.com/flancer32/alarisa-desk",
+  "bugs": {
+    "url": "https://github.com/flancer32/alarisa-desk/issues"
+  },
+  "keywords": [
+    "alarisa",
+    "desktop",
+    "pwa",
+    "teqfw"
+  ],
+  "types": "types.d.ts",
+  "files": [
+    "src/",
+    "types.d.ts"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "teqfw": {
+    "namespaces": [
+      {
+        "prefix": "Alarisa_Desk_",
+        "path": "./src",
+        "ext": ".mjs"
+      }
+    ]
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.1",
+    "typescript": "^7.0.2"
+  }
+}
