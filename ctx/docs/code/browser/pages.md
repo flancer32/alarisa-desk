@@ -11,11 +11,11 @@ Record accepted desktop browser pages and routes.
 
 | Page | Package-relative route | Purpose |
 | --- | --- | --- |
-| Desktop channel entry | `./` | Confirm that the desktop channel is connected without presenting an undeclared workspace. |
+| Desktop channel entry | `./` | Restore or establish the fixed Principal session, show the connected shell, and provide explicit lock without presenting an undeclared workspace. |
 
 ## Access And Visibility
 
-Authentication, authorization, and contextual visibility remain owned by upstream product and architecture decisions.
+Static entry delivery is public. Principal content is visible only after session restoration, enrollment, or passkey authentication; no account or Principal selection exists.
 
 ## Page-Specific Notes
 

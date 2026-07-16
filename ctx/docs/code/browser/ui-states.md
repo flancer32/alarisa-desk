@@ -9,16 +9,22 @@ Record visible browser-side states after pages and widgets are accepted.
 
 ## Common States
 
-`connected` is the only implemented page state. It means the desktop package was delivered successfully, not that a workspace or server interaction is available.
+- `checking session` — public shell loaded and asks the server for safe session status;
+- `authentication required` — no valid session exists and the passkey action is available;
+- `enrollment required` — an administrator URL is present and the device can register its passkey;
+- `authenticating` — browser WebAuthn verification is active;
+- `connected` — the fixed Principal has a valid server session;
+- `locked` — explicit logout revoked the session and hid Principal content;
+- `unavailable` — server session verification cannot complete.
 
 ## Page-Level States
 
-The desktop entry renders the connected state immediately.
+The desktop entry never renders connected state solely because static delivery succeeded. It restores connected state only from valid session status or successful WebAuthn verification.
 
 ## Widget-Level States
 
-None defined.
+The passkey/enrollment action and explicit lock action expose disabled state while their operation is active.
 
 ## State Transitions
 
-None defined.
+Checking session transitions to connected, authentication required, enrollment required, or unavailable. Successful WebAuthn transitions to connected. Explicit lock transitions to locked without a tab-switch lock transition.

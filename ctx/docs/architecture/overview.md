@@ -18,6 +18,8 @@ The package is the composition root of a desktop browser/PWA modular monolith. I
 - server-specific implementation and authority must not enter the package;
 - the package provides an installable scoped PWA shell and a neutral connected-channel state;
 - the workspace and broader browser structure remain deferred until product documentation defines them.
+- the public desktop shell uses the shared `comm` WebAuthn client, restores a valid opaque server session automatically, and otherwise verifies the one fixed Principal through a passkey;
+- desktop routine local protection relies on the operating-system lock and an explicit Alarisa logout/lock rather than tab-switch locking.
 
 ## Product Dependency
 

@@ -14,11 +14,16 @@
   <main>
     <p class="eyebrow">Десктопный канал</p>
     <h1>Alarisa Desk</h1>
-    <p>Канал подключён. Рабочее пространство будет добавлено после определения его продуктовой модели.</p>
+    <section id="auth-panel">
+      <p id="auth-status" aria-live="polite">Проверяем доступ…</p>
+      <button id="auth-action" type="button" hidden>Войти с passkey</button>
+    </section>
+    <section id="workspace" hidden>
+    <p>Principal подтверждён. Рабочее пространство будет добавлено после определения его продуктовой модели.</p>
+    <button id="lock-action" type="button" class="secondary">Заблокировать Alarisa</button>
+    </section>
     <a href="/">Выбрать другой канал</a>
   </main>
-  <script>
-    if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js", {scope: "./"});
-  </script>
+  <script type="module" src="./app.js"></script>
 </body>
 </html>

@@ -29,3 +29,20 @@ main {
 a {
   color: #b9d4ff;
 }
+
+button {
+  margin: .75rem 0;
+  padding: .7rem 1.1rem;
+  border: 0;
+  border-radius: .5rem;
+  background: #b9d4ff;
+  color: #19202b;
+  font: inherit;
+  cursor: pointer;
+}
+
+button.secondary {
+  border: 1px solid #6e7c91;
+  background: transparent;
+  color: #edf1f7;
+}

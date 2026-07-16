@@ -1,5 +1,5 @@
-const CACHE = "alarisa-desk-v1";
-const ASSETS = ["./", "./app.css", "./manifest.webmanifest", "./icon.svg"];
+const CACHE = "alarisa-desk-v2";
+const ASSETS = ["./", "./app.css", "./app.js", "/_assets/comm/auth.js", "./manifest.webmanifest", "./icon.svg"];
 
 self.addEventListener("install", (event) => event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(ASSETS))));
 self.addEventListener("activate", (event) => event.waitUntil(self.clients.claim()));
