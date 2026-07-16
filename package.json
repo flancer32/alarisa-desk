@@ -1,6 +1,6 @@
 {
   "name": "@flancer32/alarisa-desk",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Desktop browser and PWA composition package for Alarisa.",
   "type": "module",
   "license": "Apache-2.0",
@@ -21,6 +21,7 @@
   "types": "types.d.ts",
   "files": [
     "src/",
+    "web/",
     "types.d.ts"
   ],
   "engines": {

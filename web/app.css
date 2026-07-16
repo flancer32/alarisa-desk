@@ -1,0 +1,31 @@
+:root {
+  color-scheme: light dark;
+  font-family: system-ui, sans-serif;
+  background: #111722;
+  color: #edf1f7;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  display: grid;
+  place-items: center;
+}
+
+main {
+  width: min(44rem, calc(100% - 3rem));
+  padding: 3rem;
+  border: 1px solid #3b4658;
+  border-radius: 1rem;
+  background: #19202b;
+}
+
+.eyebrow {
+  color: #9fb1ca;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+a {
+  color: #b9d4ff;
+}

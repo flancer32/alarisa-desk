@@ -1,0 +1,12 @@
+{
+  "name": "Alarisa Desk",
+  "short_name": "Alarisa Desk",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#111722",
+  "theme_color": "#19202b",
+  "icons": [
+    {"src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any"}
+  ]
+}

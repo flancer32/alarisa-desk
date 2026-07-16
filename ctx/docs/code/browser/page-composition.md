@@ -1,7 +1,7 @@
 # Page Composition
 
 - Path: `ctx/docs/code/browser/page-composition.md`
-- Changed: `20260715`
+- Changed: `20260716`
 
 ## Purpose
 
@@ -9,11 +9,16 @@ Connect accepted pages to layouts and widgets.
 
 ## Composition Matrix
 
-No composition exists because pages, layouts, and widgets are not yet defined.
+```text
+desktop channel entry (./)
+  ├─ channel label and title
+  ├─ connected-channel explanation
+  └─ host channel-choice link (/)
+```
 
 ## Shared Composition Rules
 
-None defined.
+The shell contains no reusable application widget or workspace navigation.
 
 ## Exceptions
 

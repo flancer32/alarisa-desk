@@ -1,11 +1,11 @@
 # Code Overview
 
 - Path: `ctx/docs/code/overview.md`
-- Changed: `20260715`
+- Changed: `20260716`
 
 ## Code Structure
 
-`src/` is reserved for TeqFW ECMAScript modules addressed through the `Alarisa_Desk_` namespace. No functional modules are created by the initial scaffold.
+`web/` contains the package-owned desktop entry document, relative-scope manifest and service worker, stylesheet, and icon. `src/` remains reserved for future TeqFW modules addressed through the `Alarisa_Desk_` namespace.
 
 ## Engineering Constraints
 
@@ -16,4 +16,4 @@
 
 ## Browser Documentation
 
-The current browser boundary is recorded in `browser/browser-app.md`. The fuller page, layout, navigation, widget, state, asset, and responsive model remains deferred until accepted behavior exists.
+The current scoped PWA shell is recorded in `browser/browser-app.md`. The fuller workspace, navigation, widget, state, asset, and responsive model remains deferred until accepted behavior exists.

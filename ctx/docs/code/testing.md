@@ -1,8 +1,8 @@
 # Testing Overview
 
 - Path: `ctx/docs/code/testing.md`
-- Changed: `20260715`
+- Changed: `20260716`
 
 ## Test Boundary
 
-The initial scaffold has no functional modules. `npm test`, package metadata checks, ADSM validation, and TeqFW validation for every future source module are required. Browser behavior tests must follow accepted browser documentation rather than precede it.
+`npm test` verifies that the manifest, service worker, and browser references remain relative to the host-assigned desktop scope and cannot claim mobile, API, or hook routes. Package metadata checks, ADSM validation, and TeqFW validation for future source modules remain required.

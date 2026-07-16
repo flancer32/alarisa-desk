@@ -1,7 +1,7 @@
 # Browser Documentation
 
 - Path: `ctx/docs/code/browser/AGENTS.md`
-- Changed: `20260715`
+- Changed: `20260716`
 
 ## Purpose
 
@@ -10,11 +10,11 @@ Defines the browser-side documentation boundary for the desktop application pack
 ## Level Map
 
 - `AGENTS.md` — local routing and editing rules.
-- `browser-app.md` — accepted browser application scope and deferred decisions.
-- `layouts.md` — layout catalogue; currently deferred.
-- `page-composition.md` — page/layout/widget composition; currently deferred.
-- `pages.md` — page and route catalogue; currently deferred.
-- `ui-states.md` — visible state catalogue; currently deferred.
+- `browser-app.md` — implemented scoped PWA shell and deferred workspace decisions.
+- `layouts.md` — connected-channel shell layout.
+- `page-composition.md` — entry-page composition.
+- `pages.md` — package-relative entry route.
+- `ui-states.md` — connected-channel state.
 - `widgets.md` — widget catalogue; currently deferred.
 
 ## Level Boundary

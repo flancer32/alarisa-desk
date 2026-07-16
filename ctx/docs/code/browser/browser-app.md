@@ -1,16 +1,16 @@
 # Desktop Browser Application
 
 - Path: `ctx/docs/code/browser/browser-app.md`
-- Changed: `20260715`
+- Changed: `20260716`
 
 ## Purpose
 
-Define the currently accepted browser application boundary without inventing an interface.
+Define the implemented desktop PWA shell without inventing the future workspace interface.
 
 ## Accepted Scope
 
-The package will compose an installable desktop PWA optimized for large-screen and keyboard-oriented Principal–Double interaction. It may represent Signals, Discussions, navigation, and workspaces after those behaviors are defined upstream.
+The package owns an installable desktop PWA shell published by the host at `/desk/`. Its manifest, service worker, stylesheet, and icon use relative paths so the worker remains confined to that assigned scope. The entry shows that the desktop channel is connected and links back to the host-owned manual channel choice.
 
 ## Deferred Model
 
-Pages, routes, layouts, navigation paths, widgets, Web Components, UI states, browser-resident state, assets, responsive rules, accessibility details, and bootstrapping behavior are not yet accepted. Add their dedicated documents from the browser documentation model only when corresponding product and architecture decisions exist.
+Workspace pages, Signals, Discussions, navigation, widgets, Web Components, persistent browser state, and responsive workspace behavior remain deferred. The connected-channel shell must not imply that those capabilities already exist.
