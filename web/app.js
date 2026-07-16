@@ -6,7 +6,7 @@ const authAction = document.querySelector('#auth-action');
 const workspace = document.querySelector('#workspace');
 const lockAction = document.querySelector('#lock-action');
 
-function showLocked(message = 'Требуется подтверждение Principal.') {
+function showLocked(message = 'Principal verification is required.') {
   workspace.hidden = true;
   authPanel.hidden = false;
   authStatus.textContent = message;
@@ -20,7 +20,7 @@ function showUnlocked() {
 
 async function beginAuthentication() {
   authAction.disabled = true;
-  authStatus.textContent = 'Ожидаем подтверждение на устройстве…';
+  authStatus.textContent = 'Waiting for confirmation on your device…';
   try {
     const enrollmentToken = new URLSearchParams(location.search).get('enrollment');
     if (enrollmentToken) {
@@ -31,7 +31,7 @@ async function beginAuthentication() {
     }
     showUnlocked();
   } catch (error) {
-    showLocked(error instanceof Error ? error.message : 'Не удалось подтвердить Principal.');
+    showLocked(error instanceof Error ? error.message : 'Could not verify the Principal.');
   } finally {
     authAction.disabled = false;
   }
@@ -40,7 +40,7 @@ async function beginAuthentication() {
 authAction.addEventListener('click', beginAuthentication);
 lockAction.addEventListener('click', async () => {
   await logout().catch(() => undefined);
-  showLocked('Alarisa заблокирована.');
+  showLocked('Alarisa is locked.');
 });
 
 const enrollmentToken = new URLSearchParams(location.search).get('enrollment');
@@ -48,10 +48,10 @@ currentSession()
   .then((session) => {
     if (session.authenticated) showUnlocked();
     else {
-      authAction.textContent = enrollmentToken ? 'Доверять этому устройству' : 'Войти с passkey';
-      showLocked(enrollmentToken ? 'Зарегистрируйте passkey для этого устройства.' : undefined);
+      authAction.textContent = enrollmentToken ? 'Trust this device' : 'Sign in with a passkey';
+      showLocked(enrollmentToken ? 'Register a passkey for this device.' : undefined);
     }
   })
-  .catch(() => showLocked('Сервер недоступен.'));
+  .catch(() => showLocked('Server unavailable.'));
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js', {scope: './'});

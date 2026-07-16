@@ -13,7 +13,11 @@ test("desktop PWA resources remain relative to the assigned host scope", async (
 
   assert.match(html, /href="\.\/manifest\.webmanifest"/);
   assert.match(html, /src="\.\/app\.js"/);
+  assert.match(html, /<html lang="en">/);
+  assert.doesNotMatch(`${html}\n${app}`, /[\u0400-\u04FF]/);
   assert.match(app, /serviceWorker\.register\('\.\/sw\.js', \{scope: '\.\/'\}\)/);
+  assert.match(worker, /alarisa-desk-v3/);
+  assert.match(worker, /caches\.delete/);
   assert.equal(parsed.start_url, "./");
   assert.equal(parsed.scope, "./");
   assert.doesNotMatch(worker, /\/mob\//);
