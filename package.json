@@ -28,13 +28,17 @@
     "node": ">=20"
   },
   "teqfw": {
-    "namespaces": [
-      {
-        "prefix": "Alarisa_Desk_",
-        "path": "./src",
-        "ext": ".mjs"
+    "fw": {
+      "di": {
+        "namespaces": [
+          {
+            "prefix": "Alarisa_Desk_",
+            "path": "./src",
+            "ext": ".mjs"
+          }
+        ]
       }
-    ]
+    }
   },
   "scripts": {
     "test": "node --test"
