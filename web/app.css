@@ -8,13 +8,12 @@
 body {
   min-height: 100vh;
   margin: 0;
-  display: grid;
-  place-items: center;
 }
 
 main {
-  width: min(44rem, calc(100% - 3rem));
-  padding: 3rem;
+  width: min(76rem, calc(100% - 3rem));
+  margin: 2rem auto;
+  padding: 2rem;
   border: 1px solid #3b4658;
   border-radius: 1rem;
   background: #19202b;
@@ -26,13 +25,11 @@ main {
   text-transform: uppercase;
 }
 
-a {
-  color: #b9d4ff;
-}
+a { color: #b9d4ff; }
 
 button {
-  margin: .75rem 0;
-  padding: .7rem 1.1rem;
+  margin: .35rem 0;
+  padding: .6rem .9rem;
   border: 0;
   border-radius: .5rem;
   background: #b9d4ff;
@@ -45,4 +42,61 @@ button.secondary {
   border: 1px solid #6e7c91;
   background: transparent;
   color: #edf1f7;
+}
+
+.workspace-header,
+.workspace-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.workspace-grid {
+  display: grid;
+  grid-template-columns: minmax(18rem, 1fr) minmax(24rem, 1.3fr);
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.tree-panel,
+.detail-panel {
+  min-height: 22rem;
+  padding: 1rem;
+  border: 1px solid #3b4658;
+  border-radius: .75rem;
+}
+
+world-picture-tree ul {
+  margin: .25rem 0;
+  padding-left: 1.2rem;
+  list-style: none;
+}
+
+.tree-item {
+  display: flex;
+  gap: .55rem;
+  align-items: center;
+  padding: .2rem;
+  border-radius: .25rem;
+  outline: none;
+}
+
+.tree-item:focus {
+  outline: 2px solid #b9d4ff;
+  background: #263448;
+}
+
+.tree-item button {
+  min-width: 1.8rem;
+  margin: 0;
+  padding: .05rem;
+}
+
+.detail-panel h2 { margin-top: 0; }
+.detail-panel button { display: block; text-align: left; }
+
+@media (max-width: 52rem) {
+  .workspace-grid { grid-template-columns: 1fr; }
+  .workspace-header { align-items: flex-start; flex-direction: column; }
 }

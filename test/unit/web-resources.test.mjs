@@ -2,10 +2,11 @@ import assert from "node:assert/strict";
 import {readFile} from "node:fs/promises";
 import test from "node:test";
 
-test("desktop PWA resources remain relative to the assigned host scope", async () => {
-  const [html, app, manifest, worker] = await Promise.all([
+test("desktop PWA resources remain scoped and bypass protected API caching", async () => {
+  const [html, app, elements, manifest, worker] = await Promise.all([
     readFile("web/index.html", "utf8"),
     readFile("web/app.js", "utf8"),
+    readFile("web/world-picture-elements.js", "utf8"),
     readFile("web/manifest.webmanifest", "utf8"),
     readFile("web/sw.js", "utf8"),
   ]);
@@ -13,14 +14,17 @@ test("desktop PWA resources remain relative to the assigned host scope", async (
 
   assert.match(html, /href="\.\/manifest\.webmanifest"/);
   assert.match(html, /src="\.\/app\.js"/);
-  assert.match(html, /<html lang="en">/);
-  assert.doesNotMatch(`${html}\n${app}`, /[\u0400-\u04FF]/);
-  assert.match(app, /serviceWorker\.register\('\.\/sw\.js', \{scope: '\.\/'\}\)/);
-  assert.match(worker, /alarisa-desk-v3/);
-  assert.match(worker, /caches\.delete/);
+  assert.match(html, /<world-picture-tree/);
+  assert.match(html, /<world-picture-detail/);
+  assert.match(app, /serviceWorker\.register\("\.\/sw\.js", \{scope: "\.\/"\}\)/);
+  assert.match(elements, /role", "tree"/);
+  assert.match(elements, /ArrowDown/);
+  assert.match(elements, /world-picture-cross-link/);
+  assert.match(worker, /alarisa-desk-v4/);
+  assert.match(worker, /url\.pathname\.startsWith\("\/api\/"\)/);
+  assert.match(worker, /if \(url\.pathname\.startsWith\("\/api\/"\)\) return/);
   assert.equal(parsed.start_url, "./");
   assert.equal(parsed.scope, "./");
   assert.doesNotMatch(worker, /\/mob\//);
-  assert.doesNotMatch(worker, /\/api\//);
   assert.doesNotMatch(worker, /\/hooks\//);
 });

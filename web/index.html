@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#19202b">
-  <meta name="description" content="Alarisa desktop channel">
+  <meta name="description" content="Alarisa desktop World Picture viewer">
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./app.css">
@@ -14,13 +14,32 @@
   <main>
     <p class="eyebrow">Desktop channel</p>
     <h1>Alarisa Desk</h1>
-    <section id="auth-panel">
+    <section id="auth-panel" aria-labelledby="auth-status">
       <p id="auth-status" aria-live="polite">Checking access…</p>
       <button id="auth-action" type="button" hidden>Sign in with a passkey</button>
     </section>
-    <section id="workspace" hidden>
-    <p>Principal verified. The workspace will be added after its product model is defined.</p>
-    <button id="lock-action" type="button" class="secondary">Lock Alarisa</button>
+    <section id="workspace" hidden aria-label="World Picture workspace">
+      <header class="workspace-header">
+        <div>
+          <p class="eyebrow">Current World Picture</p>
+          <p id="workspace-status" aria-live="polite">Loading the World Picture…</p>
+        </div>
+        <div class="workspace-actions">
+          <button id="return-tree-action" type="button" class="secondary">Complete tree</button>
+          <button id="lock-action" type="button" class="secondary">Lock Alarisa</button>
+        </div>
+      </header>
+      <p id="workspace-error" role="alert" hidden></p>
+      <button id="retry-action" type="button" hidden>Retry</button>
+      <div class="workspace-grid">
+        <section class="tree-panel" aria-label="World Picture tree">
+          <h2>Hierarchy</h2>
+          <world-picture-tree id="world-tree"></world-picture-tree>
+        </section>
+        <aside class="detail-panel" aria-live="polite">
+          <world-picture-detail id="world-detail"></world-picture-detail>
+        </aside>
+      </div>
     </section>
     <a href="/">Choose another channel</a>
   </main>

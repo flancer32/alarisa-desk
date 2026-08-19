@@ -22,6 +22,7 @@
   "files": [
     "src/",
     "web/",
+    "skills/",
     "types.d.ts"
   ],
   "engines": {
@@ -41,7 +42,8 @@
     }
   },
   "scripts": {
-    "test": "node --test"
+    "test": "node --test",
+    "check": "tsc --project jsconfig.json"
   },
   "devDependencies": {
     "@types/node": "^26.1.1",
