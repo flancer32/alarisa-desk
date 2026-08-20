@@ -25,7 +25,7 @@
           <p id="workspace-status" aria-live="polite">Loading the World Picture…</p>
         </div>
         <div class="workspace-actions">
-          <button id="return-tree-action" type="button" class="secondary">Complete tree</button>
+          <nav id="world-breadcrumb" aria-label="World Picture path"></nav>
           <button id="lock-action" type="button" class="secondary">Lock Alarisa</button>
         </div>
       </header>
@@ -33,7 +33,7 @@
       <button id="retry-action" type="button" hidden>Retry</button>
       <div class="workspace-grid">
         <section class="tree-panel" aria-label="World Picture tree">
-          <h2>Hierarchy</h2>
+          <h2>Hierarchy <span class="hint">Select to inspect; use Open to explore.</span></h2>
           <world-picture-tree id="world-tree"></world-picture-tree>
         </section>
         <aside class="detail-panel" aria-live="polite">

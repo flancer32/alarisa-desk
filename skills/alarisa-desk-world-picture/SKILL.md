@@ -20,13 +20,12 @@ It presents the authenticated current World Picture as a file-like primary-paren
 
 ## User-visible Behavior
 
-After session restoration or successful passkey authentication, the viewer loads the complete primary-parent tree.
-The Principal can expand and navigate branches with Arrow keys, select with Enter or Space, inspect the selected Object, follow labelled cross-links, return to the complete tree, and explicitly lock Alarisa.
+After session restoration or successful passkey authentication, the viewer loads the complete primary-parent tree with branches collapsed. Its independent transient states are the explored root, expanded branches, and selected inspector Object. The Principal selects to inspect, explicitly expands/collapses child visibility, uses Open or double-click to drill down, uses the breadcrumb to return to an ancestor or the complete World Picture, follows labelled cross-links without moving hierarchy context, and explicitly locks Alarisa.
 
 The State DTO has no display-name field, but its typed Components and Properties let the viewer derive a human label.
-For each Case, the viewer presents its `title`, type code, and stable id as `title — case · #<id>`.
+For each Case, the viewer presents its `title` as the primary label; type and stable id are secondary metadata.
 If a projection is incomplete, it preserves a stable explicit fallback rather than inventing a name.
-Relations other than `case-parent` are cross-links; they never move an Object in the hierarchy.
+Relations other than `case-parent` are cross-links; they never move an Object in the hierarchy. The inspector groups them primarily by relation type and provides an object-to-relation-types view for repeated targets.
 
 ## Security And Caching
 

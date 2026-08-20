@@ -16,10 +16,15 @@ test("desktop PWA resources remain scoped and bypass protected API caching", asy
   assert.match(html, /src="\.\/app\.js"/);
   assert.match(html, /<world-picture-tree/);
   assert.match(html, /<world-picture-detail/);
+  assert.match(html, /id="world-breadcrumb"/);
   assert.match(app, /serviceWorker\.register\("\.\/sw\.js", \{scope: "\.\/"\}\)/);
   assert.match(elements, /role", "tree"/);
   assert.match(elements, /ArrowDown/);
   assert.match(elements, /world-picture-cross-link/);
+  assert.match(elements, /world-picture-drill-down/);
+  assert.match(elements, /world-picture-expand/);
+  assert.match(elements, /By relation/);
+  assert.match(elements, /By object/);
   assert.match(worker, /alarisa-desk-v4/);
   assert.match(worker, /url\.pathname\.startsWith\("\/api\/"\)/);
   assert.match(worker, /if \(url\.pathname\.startsWith\("\/api\/"\)\) return/);

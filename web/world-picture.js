@@ -1,103 +1,28 @@
 // @ts-nocheck
-
 export const WORLD_PICTURE_API = "/api/v1/world-picture";
-
-export function treeUrl(objectId) {
-  return objectId === undefined
-    ? `${WORLD_PICTURE_API}/tree`
-    : `${WORLD_PICTURE_API}/tree?focus=${encodeURIComponent(String(objectId))}`;
+export function treeUrl(id) { return id === undefined ? `${WORLD_PICTURE_API}/tree` : `${WORLD_PICTURE_API}/tree?focus=${encodeURIComponent(String(id))}`; }
+export function nodeUrl(id) { return `${WORLD_PICTURE_API}/node/${encodeURIComponent(String(id))}`; }
+export function objectLabel(id, picture = {}) {
+  const object = (picture.objects ?? []).find((item) => item.id === id); if (!object) return `Object #${id}`;
+  const types = new Map((picture.componentTypes ?? []).map((item) => [item.id, item.code])); const properties = new Map((picture.propertyTypes ?? []).map((item) => [item.id, item.code]));
+  const component = (object.components ?? []).find((item) => types.get(item.typeId) === "case") ?? (object.components ?? []).find((item) => (item.properties ?? []).some((property) => properties.get(property.typeId) === "title"));
+  const title = component?.properties?.find((item) => properties.get(item.typeId) === "title")?.value;
+  return typeof title === "string" && title.trim() ? title.trim() : "Untitled";
 }
-
-export function nodeUrl(objectId) {
-  return `${WORLD_PICTURE_API}/node/${encodeURIComponent(String(objectId))}`;
-}
-
-export function objectLabel(objectId, picture = undefined) {
-  const object = (picture?.objects ?? []).find((candidate) => candidate.id === objectId);
-  if (!object) return `Object #${objectId}`;
-
-  const componentTypes = new Map((picture.componentTypes ?? []).map((type) => [type.id, type.code]));
-  const propertyTypes = new Map((picture.propertyTypes ?? []).map((type) => [type.id, type.code]));
-  const components = object.components ?? [];
-  const caseComponent = components.find((component) => componentTypes.get(component.typeId) === "case");
-  const titledComponent = caseComponent ?? components.find((component) => (component.properties ?? []).some((property) => propertyTypes.get(property.typeId) === "title"));
-  const titleProperty = titledComponent?.properties?.find((property) => propertyTypes.get(property.typeId) === "title");
-  const title = typeof titleProperty?.value === "string" && titleProperty.value.trim() ? titleProperty.value : "Untitled";
-  const types = [...new Set(components.map((component) => componentTypes.get(component.typeId)).filter(Boolean))];
-  const type = types.length ? types.join(", ") : "object";
-  return `${title} — ${type} · #${objectId}`;
-}
-
-export class WorldPictureRequestError extends Error {
-  constructor(status) {
-    super(`World Picture request failed with status ${status}.`);
-    this.status = status;
-  }
-}
-
-async function readJson(fetchImpl, url) {
-  const response = await fetchImpl(url, {
-    credentials: "same-origin",
-    headers: {Accept: "application/json"},
-  });
-  if (!response.ok) throw new WorldPictureRequestError(response.status);
-  return await response.json();
-}
-
+export function objectType(id, picture = {}) { const object = (picture.objects ?? []).find((item) => item.id === id); const types = new Map((picture.componentTypes ?? []).map((item) => [item.id, item.code])); return [...new Set((object?.components ?? []).map((item) => types.get(item.typeId)).filter(Boolean))].join(", ") || "object"; }
+export function hierarchyPath(tree, id) { const visit = (nodes, path) => { for (const node of nodes ?? []) { const next = [...path, node.objectId]; if (node.objectId === id) return next; const found = visit(node.children, next); if (found) return found; } }; return visit(tree, []) ?? []; }
+export function groupRelations(relations, objectId, relationTypes, grouping = "relation") { const names = new Map((relationTypes ?? []).map((item) => [item.id, item.code])); const groups = new Map(); for (const relation of relations ?? []) { const type = names.get(relation.typeId) ?? "Relation"; if (type === "case-parent") continue; const target = relation.sourceObjectId === objectId ? relation.targetObjectId : relation.sourceObjectId; const key = grouping === "relation" ? type : target, value = grouping === "relation" ? target : type; if (!groups.has(key)) groups.set(key, new Set()); groups.get(key).add(value); } return groups; }
+export class WorldPictureRequestError extends Error { constructor(status) { super(`World Picture request failed with status ${status}.`); this.status = status; } }
+async function readJson(fetchImpl, url) { const response = await fetchImpl(url, {credentials: "same-origin", headers: {Accept: "application/json"}}); if (!response.ok) throw new WorldPictureRequestError(response.status); return response.json(); }
+function presentationPicture(detail, complete) { const objects = new Map((complete?.objects ?? []).map((item) => [item.id, item])); for (const item of detail.objects ?? []) objects.set(item.id, item); return {...complete, ...detail, objects: [...objects.values()], componentTypes: detail.componentTypes?.length ? detail.componentTypes : complete?.componentTypes, propertyTypes: detail.propertyTypes?.length ? detail.propertyTypes : complete?.propertyTypes, relationTypes: detail.relationTypes?.length ? detail.relationTypes : complete?.relationTypes}; }
 export function createWorldPictureController({fetchImpl = fetch, view, onUnauthorized = () => undefined}) {
-  let retry = () => loadTree();
-
-  const showFailure = function (error) {
-    if (error instanceof WorldPictureRequestError && error.status === 401) {
-      view.clearPicture();
-      onUnauthorized();
-      return;
-    }
-    if (error instanceof WorldPictureRequestError && error.status === 404) {
-      view.showStatus("This Object is no longer available. The current view is unchanged.");
-      return;
-    }
-    view.clearPicture();
-    view.showStatus(
-      error instanceof WorldPictureRequestError && error.status === 503
-        ? "The World Picture is temporarily unavailable."
-        : "The World Picture could not be reached. Check your connection and retry.",
-      true,
-    );
-  };
-
-  const loadTree = async function (focusObjectId = undefined) {
-    retry = () => loadTree(focusObjectId);
-    view.setLoading(focusObjectId === undefined ? "Loading the World Picture…" : "Loading the focused branch…");
-    try {
-      const picture = await readJson(fetchImpl, treeUrl(focusObjectId));
-      view.renderTree(picture, focusObjectId);
-      view.showStatus(focusObjectId === undefined ? "Complete World Picture." : `Focused ${objectLabel(focusObjectId)}.`);
-    } catch (error) {
-      showFailure(error);
-    }
-  };
-
-  const selectObject = async function (objectId) {
-    retry = () => selectObject(objectId);
-    view.setLoading(`Loading ${objectLabel(objectId)}…`);
-    try {
-      const [tree, detail] = await Promise.all([
-        readJson(fetchImpl, treeUrl(objectId)),
-        readJson(fetchImpl, nodeUrl(objectId)),
-      ]);
-      view.renderTree(tree, objectId);
-      view.renderDetail(detail, objectId);
-      view.showStatus(`Focused ${objectLabel(objectId)}.`);
-    } catch (error) {
-      showFailure(error);
-    }
-  };
-
-  return Object.freeze({
-    loadTree,
-    selectObject,
-    retry: () => retry(),
-    clear: () => view.clearPicture(),
-  });
+  let retry; let complete; let state = {picture: undefined, root: undefined, expanded: new Set(), selected: undefined};
+  const render = () => { if (!state.picture) return; const path = state.root === undefined ? [] : hierarchyPath(complete?.tree, state.root); view.renderTree(state.picture, {...state, expanded: new Set(state.expanded), path}); view.renderBreadcrumb?.(path, complete ?? state.picture); };
+  const fail = (error) => { if (error instanceof WorldPictureRequestError && error.status === 401) { view.clearPicture(); onUnauthorized(); } else if (error instanceof WorldPictureRequestError && error.status === 404) view.showStatus("This Object is no longer available. The current view is unchanged."); else { view.clearPicture(); view.showStatus(error instanceof WorldPictureRequestError && error.status === 503 ? "The World Picture is temporarily unavailable." : "The World Picture could not be reached. Check your connection and retry.", true); } };
+  const loadTree = async () => { retry = loadTree; view.setLoading("Loading the World Picture…"); try { const picture = await readJson(fetchImpl, treeUrl()); complete = picture; state = {...state, picture, root: undefined, expanded: new Set()}; render(); view.showStatus("World Picture."); } catch (error) { fail(error); } };
+  const selectObject = async (id) => { retry = () => selectObject(id); view.setLoading(`Loading ${objectLabel(id, state.picture ?? complete)}…`); try { const detail = presentationPicture(await readJson(fetchImpl, nodeUrl(id)), complete); state = {...state, selected: id}; render(); view.renderDetail(detail, id, {root: state.root, path: hierarchyPath(complete?.tree, state.root)}); view.showStatus(`Inspecting ${objectLabel(id, detail)}.`); } catch (error) { fail(error); } };
+  const setExpanded = (id, expanded) => { state.expanded = new Set(state.expanded); expanded ? state.expanded.add(id) : state.expanded.delete(id); render(); };
+  const drillDown = async (id) => { retry = () => drillDown(id); view.setLoading(`Opening ${objectLabel(id, state.picture ?? complete)}…`); try { const picture = await readJson(fetchImpl, treeUrl(id)); state = {...state, picture, root: id}; render(); view.showStatus(`Exploring ${objectLabel(id, picture)}.`); } catch (error) { fail(error); } };
+  const navigateTo = (id) => id === undefined ? (state = {...state, picture: complete, root: undefined}, render(), view.showStatus("World Picture.")) : drillDown(id);
+  return Object.freeze({loadTree, selectObject, setExpanded, drillDown, navigateTo, retry: () => retry(), clear: () => { complete = undefined; state = {picture: undefined, root: undefined, expanded: new Set(), selected: undefined}; view.clearPicture(); }});
 }

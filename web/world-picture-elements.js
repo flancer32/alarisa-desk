@@ -1,167 +1,18 @@
-import {objectLabel} from "./world-picture.js";
-
-function make(tag, text) {
-  const element = document.createElement(tag);
-  if (text !== undefined) element.textContent = text;
-  return element;
-}
-
+import {groupRelations, objectLabel, objectType} from "./world-picture.js";
+const make = (tag, text) => { const element = document.createElement(tag); if (text !== undefined) element.textContent = text; return element; };
+const emit = (element, type, detail) => element.dispatchEvent(new CustomEvent(type, {bubbles: true, detail}));
 export class WorldPictureTree extends HTMLElement {
-  constructor() {
-    super();
-    this.expanded = new Set();
-    this.picture = undefined;
-    this.selectedId = undefined;
-    this.addEventListener("click", (event) => this.onClick(event));
-    this.addEventListener("keydown", (event) => this.onKeydown(event));
-  }
-
-  setPicture(picture, selectedId) {
-    this.picture = picture;
-    this.selectedId = selectedId;
-    this.expanded = new Set((picture.tree ?? []).map((node) => node.objectId));
-    this.render();
-  }
-
-  onClick(event) {
-    const toggle = event.target.closest("[data-toggle]");
-    if (toggle) {
-      const id = Number(toggle.dataset.toggle);
-      if (this.expanded.has(id)) this.expanded.delete(id);
-      else this.expanded.add(id);
-      this.render();
-      return;
-    }
-    const item = event.target.closest("[role=treeitem]");
-    if (item) this.select(Number(item.dataset.objectId), "select");
-  }
-
-  onKeydown(event) {
-    const item = event.target.closest("[role=treeitem]");
-    if (!item) return;
-    const items = [...this.querySelectorAll("[role=treeitem]")];
-    const index = items.indexOf(item);
-    const focus = (next) => {
-      const nextItem = items[next];
-      nextItem?.focus();
-      if (nextItem) this.select(Number(nextItem.dataset.objectId), "focus");
-    };
-    const id = Number(item.dataset.objectId);
-    if (event.key === "ArrowDown") { event.preventDefault(); focus(index + 1); }
-    else if (event.key === "ArrowUp") { event.preventDefault(); focus(index - 1); }
-    else if (event.key === "ArrowRight") {
-      event.preventDefault();
-      const group = item.parentElement.querySelector(":scope > [role=group]");
-      if (group && !this.expanded.has(id)) {
-        this.expanded.add(id);
-        this.render();
-        this.querySelector(`[data-object-id="${id}"]`)?.focus();
-      } else if (group) {
-        const child = group.querySelector("[role=treeitem]");
-        child?.focus();
-        if (child) this.select(Number(child.dataset.objectId), "focus");
-      }
-    } else if (event.key === "ArrowLeft") {
-      event.preventDefault();
-      const group = item.parentElement.querySelector(":scope > [role=group]");
-      if (group && this.expanded.has(id)) {
-        this.expanded.delete(id);
-        this.render();
-        this.querySelector(`[data-object-id="${id}"]`)?.focus();
-      } else {
-        const parent = item.parentElement.parentElement.closest("[role=treeitem]");
-        parent?.focus();
-        if (parent) this.select(Number(parent.dataset.objectId), "focus");
-      }
-    } else if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      this.select(id, "select");
-    }
-  }
-
-  select(objectId, kind) {
-    this.dispatchEvent(new CustomEvent(`world-picture-${kind}`, {bubbles: true, detail: {objectId}}));
-  }
-
-  render() {
-    this.replaceChildren();
-    const tree = make("ul");
-    tree.setAttribute("role", "tree");
-    tree.setAttribute("aria-label", "World Picture hierarchy");
-    for (const node of this.picture?.tree ?? []) tree.append(this.renderNode(node, 1));
-    if (!tree.childElementCount) tree.append(make("li", "No Objects are available in the current World Picture."));
-    this.append(tree);
-  }
-
-  renderNode(node, level) {
-    const row = make("li");
-    row.setAttribute("role", "none");
-    const item = make("div");
-    item.className = "tree-item";
-    item.setAttribute("role", "treeitem");
-    item.setAttribute("aria-level", String(level));
-    item.dataset.objectId = String(node.objectId);
-    item.tabIndex = node.objectId === this.selectedId ? 0 : -1;
-    const children = node.children ?? [];
-    if (children.length) {
-      item.setAttribute("aria-expanded", String(this.expanded.has(node.objectId)));
-      const toggle = make("button", this.expanded.has(node.objectId) ? "−" : "+");
-      toggle.type = "button";
-      toggle.dataset.toggle = String(node.objectId);
-      toggle.setAttribute("aria-label", `${this.expanded.has(node.objectId) ? "Collapse" : "Expand"} ${objectLabel(node.objectId, this.picture)}`);
-      item.append(toggle);
-    } else item.append(make("span", "•"));
-    item.append(make("span", objectLabel(node.objectId, this.picture)));
-    row.append(item);
-    if (children.length && this.expanded.has(node.objectId)) {
-      const group = make("ul");
-      group.setAttribute("role", "group");
-      for (const child of children) group.append(this.renderNode(child, level + 1));
-      row.append(group);
-    }
-    return row;
-  }
+  constructor() { super(); this.picture = undefined; this.state = {}; this.addEventListener("click", (event) => this.onClick(event)); this.addEventListener("dblclick", (event) => { const item = event.target.closest("[role=treeitem]"); if (item) emit(this, "world-picture-drill-down", {objectId: Number(item.dataset.objectId)}); }); this.addEventListener("keydown", (event) => this.onKeydown(event)); }
+  setPicture(picture, state = {}) { this.picture = picture; this.state = state; this.render(); }
+  onClick(event) { const toggle = event.target.closest("[data-toggle]"); if (toggle) return emit(this, "world-picture-expand", {objectId: Number(toggle.dataset.toggle), expanded: !this.state.expanded.has(Number(toggle.dataset.toggle))}); const drill = event.target.closest("[data-drill]"); if (drill) return emit(this, "world-picture-drill-down", {objectId: Number(drill.dataset.drill)}); const item = event.target.closest("[role=treeitem]"); if (item) emit(this, "world-picture-select", {objectId: Number(item.dataset.objectId)}); }
+  onKeydown(event) { const item = event.target.closest("[role=treeitem]"); if (!item) return; const items = [...this.querySelectorAll("[role=treeitem]")], index = items.indexOf(item), id = Number(item.dataset.objectId), branch = item.parentElement.querySelector(":scope > [role=group]"); if (event.key === "ArrowDown" || event.key === "ArrowUp") { event.preventDefault(); items[index + (event.key === "ArrowDown" ? 1 : -1)]?.focus(); } else if (event.key === "ArrowRight" && branch) { event.preventDefault(); !this.state.expanded.has(id) ? emit(this, "world-picture-expand", {objectId: id, expanded: true}) : branch.querySelector("[role=treeitem]")?.focus(); } else if (event.key === "ArrowLeft" && branch && this.state.expanded.has(id)) { event.preventDefault(); emit(this, "world-picture-expand", {objectId: id, expanded: false}); } else if (event.key === "Enter" || event.key === " ") { event.preventDefault(); emit(this, "world-picture-select", {objectId: id}); } }
+  render() { this.replaceChildren(); const tree = make("ul"); tree.setAttribute("role", "tree"); tree.setAttribute("aria-label", "World Picture hierarchy"); for (const node of this.picture?.tree ?? []) tree.append(this.renderNode(node, 1)); if (!tree.childElementCount) tree.append(make("li", "No Objects are available in the current World Picture.")); this.append(tree); }
+  renderNode(node, level) { const row = make("li"), item = make("div"), children = node.children ?? [], label = objectLabel(node.objectId, this.picture); row.setAttribute("role", "none"); item.className = "tree-item"; item.setAttribute("role", "treeitem"); item.setAttribute("aria-level", String(level)); item.dataset.objectId = String(node.objectId); item.tabIndex = node.objectId === this.state.selected ? 0 : -1; if (children.length) { item.setAttribute("aria-expanded", String(this.state.expanded.has(node.objectId))); const button = make("button", this.state.expanded.has(node.objectId) ? "−" : "+"); button.type = "button"; button.dataset.toggle = String(node.objectId); button.setAttribute("aria-label", `${this.state.expanded.has(node.objectId) ? "Collapse" : "Expand"} ${label}`); item.append(button); } else item.append(make("span", "•")); item.append(make("span", label)); const drill = make("button", "Open"); drill.type = "button"; drill.dataset.drill = String(node.objectId); drill.className = "tree-drill"; drill.setAttribute("aria-label", `Explore ${label}`); item.append(drill); row.append(item); if (children.length && this.state.expanded.has(node.objectId)) { const group = make("ul"); group.setAttribute("role", "group"); for (const child of children) group.append(this.renderNode(child, level + 1)); row.append(group); } return row; }
 }
-
 export class WorldPictureDetail extends HTMLElement {
-  setPicture(picture, objectId) {
-    this.replaceChildren();
-    const object = (picture.objects ?? []).find((candidate) => candidate.id === objectId);
-    if (!object) return;
-    this.append(make("h2", objectLabel(objectId, picture)));
-    const relationTypes = new Map((picture.relationTypes ?? []).map((type) => [type.id, type.code]));
-    const relations = (picture.relations ?? []).filter((relation) => relationTypes.get(relation.typeId) !== "case-parent");
-    const links = make("section");
-    links.append(make("h3", "Cross-links"));
-    if (!relations.length) links.append(make("p", "No cross-links are available for this Object."));
-    for (const relation of relations) {
-      const targetId = relation.sourceObjectId === objectId ? relation.targetObjectId : relation.sourceObjectId;
-      const button = make("button", `${relationTypes.get(relation.typeId) ?? "Relation"}: ${objectLabel(targetId)}`);
-      button.type = "button";
-      button.addEventListener("click", () => this.dispatchEvent(new CustomEvent("world-picture-cross-link", {bubbles: true, detail: {objectId: targetId}})));
-      links.append(button);
-    }
-    this.append(links);
-    const components = make("section");
-    components.append(make("h3", "Components"));
-    const componentTypes = new Map((picture.componentTypes ?? []).map((type) => [type.id, type.code]));
-    const propertyTypes = new Map((picture.propertyTypes ?? []).map((type) => [type.id, type.code]));
-    if (!(object.components ?? []).length) components.append(make("p", "No components are available."));
-    for (const component of object.components ?? []) {
-      const heading = make("h4", componentTypes.get(component.typeId) ?? `Component #${component.id}`);
-      components.append(heading);
-      const properties = make("dl");
-      for (const property of component.properties ?? []) {
-        properties.append(make("dt", propertyTypes.get(property.typeId) ?? `Property #${property.id}`));
-        properties.append(make("dd", JSON.stringify(property.value)));
-      }
-      components.append(properties);
-    }
-    this.append(components);
-  }
-
+  constructor() { super(); this.grouping = "relation"; this.addEventListener("click", (event) => { const button = event.target.closest("[data-grouping]"); if (button) { this.grouping = button.dataset.grouping; this.setPicture(this.picture, this.objectId, this.context); } }); }
+  setPicture(picture, objectId, context = {}) { this.picture = picture; this.objectId = objectId; this.context = context; this.replaceChildren(); const object = (picture.objects ?? []).find((item) => item.id === objectId); if (!object) return; this.append(make("h2", objectLabel(objectId, picture)), make("p", objectType(objectId, picture))); const componentTypes = new Map((picture.componentTypes ?? []).map((item) => [item.id, item.code])), propertyTypes = new Map((picture.propertyTypes ?? []).map((item) => [item.id, item.code])); const components = make("section"); components.append(make("h3", "Components")); for (const component of object.components ?? []) { components.append(make("h4", componentTypes.get(component.typeId) ?? "Component")); const properties = make("dl"); for (const property of component.properties ?? []) properties.append(make("dt", propertyTypes.get(property.typeId) ?? "Property"), make("dd", JSON.stringify(property.value))); components.append(properties); } this.append(components, this.renderLinks()); }
+  renderLinks() { const section = make("section"); section.append(make("h3", "Cross-links")); for (const [mode, label] of [["relation", "By relation"], ["object", "By object"]]) { const button = make("button", label); button.type = "button"; button.dataset.grouping = mode; button.disabled = this.grouping === mode; section.append(button); } const groups = groupRelations(this.picture.relations, this.objectId, this.picture.relationTypes, this.grouping); if (!groups.size) { section.append(make("p", "No cross-links are available for this Object.")); return section; } for (const [key, values] of groups) { const group = make("div"); group.className = "relation-group"; group.append(make("h4", `${this.grouping === "relation" ? key : objectLabel(key, this.picture)} (${values.size})`)); for (const value of values) { if (this.grouping === "relation") { const button = make("button", objectLabel(value, this.picture)); button.type = "button"; button.addEventListener("click", () => emit(this, "world-picture-cross-link", {objectId: value})); group.append(button); } else group.append(make("p", value)); } section.append(group); } return section; }
   clear() { this.replaceChildren(); }
 }
-
-customElements.define("world-picture-tree", WorldPictureTree);
-customElements.define("world-picture-detail", WorldPictureDetail);
+customElements.define("world-picture-tree", WorldPictureTree); customElements.define("world-picture-detail", WorldPictureDetail);

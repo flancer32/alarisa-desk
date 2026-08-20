@@ -2,7 +2,7 @@ import {authenticate, currentSession, logout, registerAuthenticator} from "/_ass
 
 import "./world-picture-elements.js";
 import {createSessionFlow} from "./session-flow.js";
-import {createWorldPictureController} from "./world-picture.js";
+import {createWorldPictureController, objectLabel} from "./world-picture.js";
 
 const authPanel = document.querySelector("#auth-panel");
 const authStatus = document.querySelector("#auth-status");
@@ -13,7 +13,7 @@ const workspaceError = document.querySelector("#workspace-error");
 const retryAction = document.querySelector("#retry-action");
 const tree = document.querySelector("#world-tree");
 const detail = document.querySelector("#world-detail");
-const returnTreeAction = document.querySelector("#return-tree-action");
+const breadcrumb = document.querySelector("#world-breadcrumb");
 const lockAction = document.querySelector("#lock-action");
 const enrollmentToken = new URLSearchParams(location.search).get("enrollment");
 
@@ -24,8 +24,27 @@ const view = {
     workspaceError.hidden = true;
     retryAction.hidden = true;
   },
-  renderTree(picture, selectedId) {
-    tree.setPicture(picture, selectedId);
+  renderTree(picture, state) {
+    tree.setPicture(picture, state);
+  },
+  renderBreadcrumb(path, pictureData) {
+    breadcrumb.replaceChildren();
+    const complete = document.createElement("button");
+    complete.type = "button";
+    complete.className = "secondary";
+    complete.textContent = "World Picture";
+    complete.dataset.root = "";
+    breadcrumb.append(complete);
+    for (const objectId of path) {
+      const separator = document.createElement("span");
+      separator.textContent = " / ";
+      const item = document.createElement("button");
+      item.type = "button";
+      item.className = "secondary";
+      item.textContent = objectLabel(objectId, pictureData);
+      item.dataset.root = String(objectId);
+      breadcrumb.append(separator, item);
+    }
   },
   renderDetail(picture, objectId) {
     detail.setPicture(picture, objectId);
@@ -74,10 +93,14 @@ sessionFlow = createSessionFlow({
 
 authAction.addEventListener("click", () => sessionFlow.authenticate());
 lockAction.addEventListener("click", () => sessionFlow.lock());
-returnTreeAction.addEventListener("click", () => picture.loadTree());
+breadcrumb.addEventListener("click", (event) => {
+  const item = event.target.closest("[data-root]");
+  if (item) picture.navigateTo(item.dataset.root === "" ? undefined : Number(item.dataset.root));
+});
 retryAction.addEventListener("click", () => picture.retry());
 tree.addEventListener("world-picture-select", (event) => picture.selectObject(event.detail.objectId));
-tree.addEventListener("world-picture-focus", (event) => picture.selectObject(event.detail.objectId));
+tree.addEventListener("world-picture-expand", (event) => picture.setExpanded(event.detail.objectId, event.detail.expanded));
+tree.addEventListener("world-picture-drill-down", (event) => picture.drillDown(event.detail.objectId));
 detail.addEventListener("world-picture-cross-link", (event) => picture.selectObject(event.detail.objectId));
 
 sessionFlow.restore();
