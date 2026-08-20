@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {createSessionFlow} from "../../web/session-flow.js";
-import {createWorldPictureController, nodeUrl, treeUrl} from "../../web/world-picture.js";
+import {createWorldPictureController, nodeUrl, objectLabel, treeUrl} from "../../web/world-picture.js";
 
 function response(status, body = {}) {
   return {ok: status >= 200 && status < 300, status, json: async () => body};
@@ -20,6 +20,17 @@ function viewLog() {
     showStatus: (message, retryable) => calls.push(["status", message, retryable]),
   };
 }
+
+test("uses a Case title, component type, and stable id for a human-readable Object label", () => {
+  const picture = {
+    objects: [{id: 17, components: [{typeId: 1, properties: [{typeId: 2, value: "Household"}]}]}],
+    componentTypes: [{id: 1, code: "case"}],
+    propertyTypes: [{id: 2, code: "title"}],
+  };
+
+  assert.equal(objectLabel(17, picture), "Household — case · #17");
+  assert.equal(objectLabel(18, picture), "Object #18");
+});
 
 test("uses only documented tree, focus, and node routes for an Object focus", async () => {
   const calls = [];

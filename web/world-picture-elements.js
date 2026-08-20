@@ -108,10 +108,10 @@ export class WorldPictureTree extends HTMLElement {
       const toggle = make("button", this.expanded.has(node.objectId) ? "−" : "+");
       toggle.type = "button";
       toggle.dataset.toggle = String(node.objectId);
-      toggle.setAttribute("aria-label", `${this.expanded.has(node.objectId) ? "Collapse" : "Expand"} ${objectLabel(node.objectId)}`);
+      toggle.setAttribute("aria-label", `${this.expanded.has(node.objectId) ? "Collapse" : "Expand"} ${objectLabel(node.objectId, this.picture)}`);
       item.append(toggle);
     } else item.append(make("span", "•"));
-    item.append(make("span", objectLabel(node.objectId)));
+    item.append(make("span", objectLabel(node.objectId, this.picture)));
     row.append(item);
     if (children.length && this.expanded.has(node.objectId)) {
       const group = make("ul");
@@ -128,7 +128,7 @@ export class WorldPictureDetail extends HTMLElement {
     this.replaceChildren();
     const object = (picture.objects ?? []).find((candidate) => candidate.id === objectId);
     if (!object) return;
-    this.append(make("h2", objectLabel(objectId)));
+    this.append(make("h2", objectLabel(objectId, picture)));
     const relationTypes = new Map((picture.relationTypes ?? []).map((type) => [type.id, type.code]));
     const relations = (picture.relations ?? []).filter((relation) => relationTypes.get(relation.typeId) !== "case-parent");
     const links = make("section");

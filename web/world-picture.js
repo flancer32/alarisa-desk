@@ -12,8 +12,20 @@ export function nodeUrl(objectId) {
   return `${WORLD_PICTURE_API}/node/${encodeURIComponent(String(objectId))}`;
 }
 
-export function objectLabel(objectId) {
-  return `Object #${objectId}`;
+export function objectLabel(objectId, picture = undefined) {
+  const object = (picture?.objects ?? []).find((candidate) => candidate.id === objectId);
+  if (!object) return `Object #${objectId}`;
+
+  const componentTypes = new Map((picture.componentTypes ?? []).map((type) => [type.id, type.code]));
+  const propertyTypes = new Map((picture.propertyTypes ?? []).map((type) => [type.id, type.code]));
+  const components = object.components ?? [];
+  const caseComponent = components.find((component) => componentTypes.get(component.typeId) === "case");
+  const titledComponent = caseComponent ?? components.find((component) => (component.properties ?? []).some((property) => propertyTypes.get(property.typeId) === "title"));
+  const titleProperty = titledComponent?.properties?.find((property) => propertyTypes.get(property.typeId) === "title");
+  const title = typeof titleProperty?.value === "string" && titleProperty.value.trim() ? titleProperty.value : "Untitled";
+  const types = [...new Set(components.map((component) => componentTypes.get(component.typeId)).filter(Boolean))];
+  const type = types.length ? types.join(", ") : "object";
+  return `${title} — ${type} · #${objectId}`;
 }
 
 export class WorldPictureRequestError extends Error {

@@ -23,8 +23,9 @@ It presents the authenticated current World Picture as a file-like primary-paren
 After session restoration or successful passkey authentication, the viewer loads the complete primary-parent tree.
 The Principal can expand and navigate branches with Arrow keys, select with Enter or Space, inspect the selected Object, follow labelled cross-links, return to the complete tree, and explicitly lock Alarisa.
 
-The State DTO has no display-name field.
-The viewer therefore uses stable `Object #<id>` presentation labels.
+The State DTO has no display-name field, but its typed Components and Properties let the viewer derive a human label.
+For each Case, the viewer presents its `title`, type code, and stable id as `title — case · #<id>`.
+If a projection is incomplete, it preserves a stable explicit fallback rather than inventing a name.
 Relations other than `case-parent` are cross-links; they never move an Object in the hierarchy.
 
 ## Security And Caching
