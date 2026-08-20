@@ -10,8 +10,22 @@ export function objectLabel(id, picture = {}) {
   return typeof title === "string" && title.trim() ? title.trim() : "Untitled";
 }
 export function objectType(id, picture = {}) { const object = (picture.objects ?? []).find((item) => item.id === id); const types = new Map((picture.componentTypes ?? []).map((item) => [item.id, item.code])); return [...new Set((object?.components ?? []).map((item) => types.get(item.typeId)).filter(Boolean))].join(", ") || "object"; }
+export function objectVisual(id, picture = {}) {
+  const type = objectType(id, picture).split(", ")[0].toLowerCase();
+  const known = {case: ["◇", "Case"], person: ["●", "Person"], event: ["◆", "Event"], goal: ["▲", "Goal"]};
+  const [icon, label] = known[type] ?? ["◈", type === "object" ? "Object" : type];
+  return {icon, label, type};
+}
+export function objectSummary(id, picture = {}) {
+  const object = (picture.objects ?? []).find((item) => item.id === id);
+  const types = new Map((picture.componentTypes ?? []).map((item) => [item.id, item.code]));
+  const properties = new Map((picture.propertyTypes ?? []).map((item) => [item.id, item.code]));
+  const values = Object.fromEntries((object?.components ?? []).flatMap((component) => (component.properties ?? []).map((property) => [properties.get(property.typeId), property.value])).filter(([key]) => key));
+  return {description: typeof values.description === "string" ? values.description : undefined, status: typeof values.status === "string" ? values.status : undefined, values, components: object?.components ?? [], types, properties};
+}
 export function hierarchyPath(tree, id) { const visit = (nodes, path) => { for (const node of nodes ?? []) { const next = [...path, node.objectId]; if (node.objectId === id) return next; const found = visit(node.children, next); if (found) return found; } }; return visit(tree, []) ?? []; }
-export function groupRelations(relations, objectId, relationTypes, grouping = "relation") { const names = new Map((relationTypes ?? []).map((item) => [item.id, item.code])); const groups = new Map(); for (const relation of relations ?? []) { const type = names.get(relation.typeId) ?? "Relation"; if (type === "case-parent") continue; const target = relation.sourceObjectId === objectId ? relation.targetObjectId : relation.sourceObjectId; const key = grouping === "relation" ? type : target, value = grouping === "relation" ? target : type; if (!groups.has(key)) groups.set(key, new Set()); groups.get(key).add(value); } return groups; }
+export function groupRelations(relations, objectId, relationTypes, grouping = "relation") { const names = new Map((relationTypes ?? []).map((item) => [item.id, item.code])); const groups = new Map(); for (const relation of relations ?? []) { if (relation.sourceObjectId !== objectId && relation.targetObjectId !== objectId) continue; const type = names.get(relation.typeId) ?? "Relation"; if (type === "case-parent") continue; const target = relation.sourceObjectId === objectId ? relation.targetObjectId : relation.sourceObjectId; const key = grouping === "relation" ? type : target, value = grouping === "relation" ? target : type; if (!groups.has(key)) groups.set(key, new Set()); groups.get(key).add(value); } return groups; }
+export function relationCount(id, picture = {}) { return [...groupRelations(picture.relations, id, picture.relationTypes).values()].reduce((count, targets) => count + targets.size, 0); }
 export class WorldPictureRequestError extends Error { constructor(status) { super(`World Picture request failed with status ${status}.`); this.status = status; } }
 async function readJson(fetchImpl, url) { const response = await fetchImpl(url, {credentials: "same-origin", headers: {Accept: "application/json"}}); if (!response.ok) throw new WorldPictureRequestError(response.status); return response.json(); }
 function presentationPicture(detail, complete) { const objects = new Map((complete?.objects ?? []).map((item) => [item.id, item])); for (const item of detail.objects ?? []) objects.set(item.id, item); return {...complete, ...detail, objects: [...objects.values()], componentTypes: detail.componentTypes?.length ? detail.componentTypes : complete?.componentTypes, propertyTypes: detail.propertyTypes?.length ? detail.propertyTypes : complete?.propertyTypes, relationTypes: detail.relationTypes?.length ? detail.relationTypes : complete?.relationTypes}; }
@@ -22,7 +36,9 @@ export function createWorldPictureController({fetchImpl = fetch, view, onUnautho
   const loadTree = async () => { retry = loadTree; view.setLoading("Loading the World Picture…"); try { const picture = await readJson(fetchImpl, treeUrl()); complete = picture; state = {...state, picture, root: undefined, expanded: new Set()}; render(); view.showStatus("World Picture."); } catch (error) { fail(error); } };
   const selectObject = async (id) => { retry = () => selectObject(id); view.setLoading(`Loading ${objectLabel(id, state.picture ?? complete)}…`); try { const detail = presentationPicture(await readJson(fetchImpl, nodeUrl(id)), complete); state = {...state, selected: id}; render(); view.renderDetail(detail, id, {root: state.root, path: hierarchyPath(complete?.tree, state.root)}); view.showStatus(`Inspecting ${objectLabel(id, detail)}.`); } catch (error) { fail(error); } };
   const setExpanded = (id, expanded) => { state.expanded = new Set(state.expanded); expanded ? state.expanded.add(id) : state.expanded.delete(id); render(); };
+  const collapseAll = () => { state = {...state, expanded: new Set()}; render(); };
+  const expandOneLevel = () => { const expanded = new Set(state.expanded); for (const node of state.picture?.tree ?? []) if ((node.children ?? []).length) expanded.add(node.objectId); state = {...state, expanded}; render(); };
   const drillDown = async (id) => { retry = () => drillDown(id); view.setLoading(`Opening ${objectLabel(id, state.picture ?? complete)}…`); try { const picture = await readJson(fetchImpl, treeUrl(id)); state = {...state, picture, root: id}; render(); view.showStatus(`Exploring ${objectLabel(id, picture)}.`); } catch (error) { fail(error); } };
   const navigateTo = (id) => id === undefined ? (state = {...state, picture: complete, root: undefined}, render(), view.showStatus("World Picture.")) : drillDown(id);
-  return Object.freeze({loadTree, selectObject, setExpanded, drillDown, navigateTo, retry: () => retry(), clear: () => { complete = undefined; state = {picture: undefined, root: undefined, expanded: new Set(), selected: undefined}; view.clearPicture(); }});
+  return Object.freeze({loadTree, selectObject, setExpanded, collapseAll, expandOneLevel, drillDown, navigateTo, retry: () => retry(), clear: () => { complete = undefined; state = {picture: undefined, root: undefined, expanded: new Set(), selected: undefined}; view.clearPicture(); }});
 }

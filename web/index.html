@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#19202b">
+  <meta name="theme-color" content="#f7efe6">
   <meta name="description" content="Alarisa desktop World Picture viewer">
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
@@ -21,7 +21,7 @@
     <section id="workspace" hidden aria-label="World Picture workspace">
       <header class="workspace-header">
         <div>
-          <p class="eyebrow">Current World Picture</p>
+          <p class="eyebrow">World Picture · Hierarchy</p>
           <p id="workspace-status" aria-live="polite">Loading the World Picture…</p>
         </div>
         <div class="workspace-actions">
@@ -33,7 +33,10 @@
       <button id="retry-action" type="button" hidden>Retry</button>
       <div class="workspace-grid">
         <section class="tree-panel" aria-label="World Picture tree">
-          <h2>Hierarchy <span class="hint">Select to inspect; use Open to explore.</span></h2>
+          <div class="panel-heading">
+            <div><h2>Hierarchy</h2><span class="hint">Select to inspect · ↗ to explore</span></div>
+            <div class="tree-actions"><button id="expand-level-action" type="button" class="text-button">Expand level</button><button id="collapse-all-action" type="button" class="text-button">Collapse all</button></div>
+          </div>
           <world-picture-tree id="world-tree"></world-picture-tree>
         </section>
         <aside class="detail-panel" aria-live="polite">

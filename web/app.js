@@ -14,6 +14,8 @@ const retryAction = document.querySelector("#retry-action");
 const tree = document.querySelector("#world-tree");
 const detail = document.querySelector("#world-detail");
 const breadcrumb = document.querySelector("#world-breadcrumb");
+const expandLevelAction = document.querySelector("#expand-level-action");
+const collapseAllAction = document.querySelector("#collapse-all-action");
 const lockAction = document.querySelector("#lock-action");
 const enrollmentToken = new URLSearchParams(location.search).get("enrollment");
 
@@ -98,6 +100,8 @@ breadcrumb.addEventListener("click", (event) => {
   if (item) picture.navigateTo(item.dataset.root === "" ? undefined : Number(item.dataset.root));
 });
 retryAction.addEventListener("click", () => picture.retry());
+expandLevelAction.addEventListener("click", () => picture.expandOneLevel());
+collapseAllAction.addEventListener("click", () => picture.collapseAll());
 tree.addEventListener("world-picture-select", (event) => picture.selectObject(event.detail.objectId));
 tree.addEventListener("world-picture-expand", (event) => picture.setExpanded(event.detail.objectId, event.detail.expanded));
 tree.addEventListener("world-picture-drill-down", (event) => picture.drillDown(event.detail.objectId));

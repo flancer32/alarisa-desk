@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {createSessionFlow} from "../../web/session-flow.js";
-import {createWorldPictureController, groupRelations, hierarchyPath, nodeUrl, objectLabel, treeUrl} from "../../web/world-picture.js";
+import {createWorldPictureController, groupRelations, hierarchyPath, nodeUrl, objectLabel, objectVisual, relationCount, treeUrl} from "../../web/world-picture.js";
 
 function response(status, body = {}) {
   return {ok: status >= 200 && status < 300, status, json: async () => body};
@@ -37,6 +37,12 @@ test("uses a human-readable Case title as the primary Object label", () => {
 
   assert.equal(objectLabel(17, picture), "Household");
   assert.equal(objectLabel(18, picture), "Object #18");
+  assert.deepEqual(objectVisual(17, picture), {icon: "◇", label: "Case", type: "case"});
+});
+
+test("derives compact relation metadata without making a second tree placement", () => {
+  const relations = [{typeId: 1, sourceObjectId: 2, targetObjectId: 3}, {typeId: 1, sourceObjectId: 2, targetObjectId: 4}, {typeId: 2, sourceObjectId: 2, targetObjectId: 3}, {typeId: 1, sourceObjectId: 7, targetObjectId: 8}];
+  assert.equal(relationCount(2, {relations, relationTypes: [{id: 1, code: "supports"}, {id: 2, code: "depends-on"}]}), 3);
 });
 
 test("selection reads detail without changing root or expanding the hierarchy", async () => {
@@ -71,6 +77,15 @@ test("initial hierarchy is collapsed and expansion changes neither root nor sele
   assert.equal(state.root, undefined); assert.equal(state.selected, undefined); assert.deepEqual([...state.expanded], [1]);
   controller.setExpanded(1, false);
   assert.deepEqual([...view.calls.filter(([kind]) => kind === "tree").at(-1)[2].expanded], []);
+});
+
+test("compact bulk hierarchy actions only change expanded branches", async () => {
+  const view = viewLog(); const controller = createWorldPictureController({fetchImpl: async () => response(200, picture), view});
+  await controller.loadTree(); controller.expandOneLevel();
+  let state = view.calls.filter(([kind]) => kind === "tree").at(-1)[2];
+  assert.deepEqual([...state.expanded], [1]); assert.equal(state.root, undefined); assert.equal(state.selected, undefined);
+  controller.collapseAll(); state = view.calls.filter(([kind]) => kind === "tree").at(-1)[2];
+  assert.deepEqual([...state.expanded], []); assert.equal(state.root, undefined); assert.equal(state.selected, undefined);
 });
 
 test("drill-down and breadcrumb navigation explicitly change the hierarchy root", async () => {
